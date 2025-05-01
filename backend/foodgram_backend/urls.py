@@ -15,8 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from djoser.views import TokenCreateView, TokenDestroyView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
+    # # path('users/', include('users.urls')),
+    # path('api/auth/token/login/', TokenCreateView.as_view(), name='jwt-create'),
+    # path('api/auth/token/logout/', TokenDestroyView.as_view(), name='jwt-destroy'),
+    path('api/', include('djoser.urls')),
+    # path('auth/', include('djoser.urls')),
+    # # JWT-эндпоинты, для управления JWT-токенами:
+    path('api/auth/', include('djoser.urls.authtoken')),
 ]
