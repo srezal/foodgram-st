@@ -146,8 +146,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'core.pagination.FoodgramPagination',
-    'PAGE_SIZE': 100
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.FoodgramPagination'
 }
 
 

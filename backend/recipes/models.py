@@ -9,7 +9,7 @@ class Recipe(models.Model):
     name = models.CharField(
         'Название', max_length=256
     )
-    author = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    author = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='recipes')
     image = models.ImageField(
         upload_to='recipes/images/', 
         null=False,  
