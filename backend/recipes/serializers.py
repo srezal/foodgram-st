@@ -1,9 +1,14 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from .models import Recipe, IngredientInRecipe, FavouriteRecipe, ShoopingCart
 from core.serializers import Base64ImageField
 from ingredients.models import Ingredient
-from users.serializers import FoodgramUserSerializer
+from users.serializers import FoodgramUserSerializer, ShortRecipeSerializer
+
+
+User = get_user_model()
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
@@ -18,6 +23,34 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientInRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class AddRecipeInShoppingCartSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=User.objects.all(),
+        write_only=True
+    )
+    recipe = serializers.SlugRelatedField(
+        slug_field='id',
+        queryset=Recipe.objects.all(),
+    )
+    class Meta:
+        model = ShoopingCart
+        fields = (
+            'user',
+            'recipe'
+        ) 
+        validators = [
+            UniqueTogetherValidator(
+                queryset=model.objects.all(),
+                fields=('recipe', 'user'),
+                message='Рецепт уже добавлен в корзину',
+            )
+        ]
+    
+    def to_representation(self, instance):
+        return ShortRecipeSerializer(instance.recipe, context=self.context).data
 
 
 class RecipeSerializer(serializers.ModelSerializer):
