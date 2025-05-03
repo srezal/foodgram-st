@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import NotFound
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from .models import Recipe, IngredientInRecipe, FavouriteRecipe, ShoopingCart
+from .models import Recipe, IngredientInRecipe, FavoriteRecipe, ShoopingCart
 from core.serializers import Base64ImageField
 from ingredients.models import Ingredient
 from users.serializers import FoodgramUserSerializer, ShortRecipeSerializer
@@ -31,8 +32,7 @@ class AddRecipeInShoppingCartSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(),
         write_only=True
     )
-    recipe = serializers.SlugRelatedField(
-        slug_field='id',
+    recipe = serializers.PrimaryKeyRelatedField(
         queryset=Recipe.objects.all(),
     )
     class Meta:
@@ -49,6 +49,33 @@ class AddRecipeInShoppingCartSerializer(serializers.ModelSerializer):
             )
         ]
     
+    def to_representation(self, instance):
+        return ShortRecipeSerializer(instance.recipe, context=self.context).data
+    
+
+class AddRecipeInFavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        queryset=User.objects.all(),
+        write_only=True
+    )
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+    )
+    class Meta:
+        model = FavoriteRecipe
+        fields = (
+            'user',
+            'recipe'
+        ) 
+        validators = [
+            UniqueTogetherValidator(
+                queryset=model.objects.all(),
+                fields=('recipe', 'user'),
+                message='Рецепт уже добавлен в избранное',
+            )
+        ]
+
     def to_representation(self, instance):
         return ShortRecipeSerializer(instance.recipe, context=self.context).data
 
@@ -96,7 +123,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         current_user = self.context['request'].user
         if current_user.is_anonymous:
             return False
-        return FavouriteRecipe.objects.filter(user=current_user, recipe=obj).exists()
+        return FavoriteRecipe.objects.filter(user=current_user, recipe=obj).exists()
     
     def get_is_in_shopping_cart(self, obj):
         current_user = self.context['request'].user

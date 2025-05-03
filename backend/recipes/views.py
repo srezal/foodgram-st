@@ -5,7 +5,7 @@ from io import BytesIO
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .serializers import RecipeSerializer, AddRecipeInShoppingCartSerializer
+from .serializers import RecipeSerializer, AddRecipeInShoppingCartSerializer, AddRecipeInFavoriteSerializer
 from .models import Recipe, ShoopingCart
 from core.permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,6 +19,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ['author']
     serializer_class = RecipeSerializer
+
+
+    @action(
+        permission_classes=[IsAuthenticated],
+        methods=['post'],
+        detail=True,
+        url_path='favorite',
+        url_name='favorite'
+    )
+    def add_in_favourite(self, request, pk):
+        serializer = AddRecipeInFavoriteSerializer(
+            data={
+                'user': self.request.user,
+                'recipe': pk
+            },
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
     @action(
