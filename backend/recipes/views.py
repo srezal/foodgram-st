@@ -120,8 +120,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name='get-link',
     )
     def get_link(self, request, pk):
-        short_link = LinkPair.get_or_create_short_link(f'/api/recipes/{pk}/')
+        short_link = LinkPair.get_or_create_short_link(f'/recipes/{pk}/')
         return Response({
             'short-link': request.build_absolute_uri(short_link)
         })
-

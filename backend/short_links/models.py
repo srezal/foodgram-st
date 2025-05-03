@@ -3,15 +3,14 @@ import hashlib
 
 
 class LinkPair(models.Model):
-    original_link = models.CharField()
-    short_link = models.CharField()
-    pk = models.CompositePrimaryKey("original_link", "short_link")
+    original_link = models.CharField(primary_key=True, verbose_name='Оригинальная ссылка')
+    short_link = models.CharField(verbose_name='Прямая ссылка')
 
     def save(self, *args, **kwargs):
         token = hashlib.shake_256(
             self.original_link.encode()
         ).hexdigest(3)
-        self.short_link = f'/{token}/'
+        self.short_link = f'/s/{token}/'
         super().save(*args, **kwargs)
 
     @classmethod
@@ -26,3 +25,7 @@ class LinkPair(models.Model):
         )
         link_pair.save()
         return link_pair.short_link
+    
+    class Meta:
+        verbose_name = 'Пара ссылок'
+        verbose_name_plural = 'Пары ссылок'

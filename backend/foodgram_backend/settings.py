@@ -26,8 +26,9 @@ SECRET_KEY = 'django-insecure-p73h=a8z$&q&up40v-wvx9(=$)felxam#-7j_r1t*&-11$4p70
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost',
+]
 
 # Application definition
 
@@ -45,12 +46,14 @@ INSTALLED_APPS = [
     'short_links.apps.ShortLinksConfig',
     'djoser',
     'rest_framework',
+    'corsheaders',
     'rest_framework.authtoken',
     'django_filters'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -114,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU' 
 
 TIME_ZONE = 'UTC'
 
@@ -126,7 +129,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles/static' 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

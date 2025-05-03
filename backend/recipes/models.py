@@ -9,11 +9,12 @@ class Recipe(models.Model):
     name = models.CharField(
         'Название', max_length=256
     )
-    author = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='recipes')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes', verbose_name='Автор')
     image = models.ImageField(
         upload_to='recipes/images/', 
         null=False,  
-        default=None
+        default=None,
+        verbose_name='Изображение'
     )
     text = models.TextField('Описание')
     cooking_time = models.PositiveSmallIntegerField(
@@ -33,6 +34,14 @@ class Recipe(models.Model):
         Ingredient, verbose_name='Ингредиенты', through='IngredientInRecipe'
     )
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепт'
+
+
+    def __str__(self):
+        return self.name
+
 
 class FavoriteRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
@@ -40,6 +49,8 @@ class FavoriteRecipe(models.Model):
 
     class Meta:
         default_related_name = 'favorites'
+        verbose_name = 'Избранный рецепт'
+        verbose_name_plural = 'Избранные рецепты'
 
 
 class ShoopingCart(models.Model):
@@ -48,6 +59,8 @@ class ShoopingCart(models.Model):
 
     class Meta:
         default_related_name = 'shopping_cart'
+        verbose_name = 'Рецепт в корзине'
+        verbose_name_plural = 'Рецепты в корзине'
 
 
 class IngredientInRecipe(models.Model):
@@ -71,3 +84,5 @@ class IngredientInRecipe(models.Model):
 
     class Meta:
         default_related_name = 'recipe_ingredients'
+        verbose_name = 'Ингредиент в составе рецепта'
+        verbose_name_plural = 'Ингредиенты в составе рецептов'
