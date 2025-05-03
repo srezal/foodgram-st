@@ -38,10 +38,16 @@ class FavoriteRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
 
+    class Meta:
+        default_related_name = 'favorites'
+
 
 class ShoopingCart(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+
+    class Meta:
+        default_related_name = 'shopping_cart'
 
 
 class IngredientInRecipe(models.Model):
