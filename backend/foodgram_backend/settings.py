@@ -26,7 +26,7 @@ load_dotenv(os.path.join(BASE_DIR, "..", "infra", ".env"))
 SECRET_KEY = "django-insecure-p73h=a8z$&q&up40v-wvx9(=$)felxam#-7j_r1t*&-11$4p70"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost",
