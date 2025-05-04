@@ -8,7 +8,7 @@ admin.site.register([ShoopingCart, FavoriteRecipe, IngredientInRecipe])
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    search_fields = ("name", "author")
+    search_fields = ("name", "author__username")
     search_help_text = "Поиск по названию рецепта или его автору"
     readonly_fields = ("in_favorites",)
 
