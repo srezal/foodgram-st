@@ -1,13 +1,15 @@
 from django.core.management.base import BaseCommand
+from abc import ABC, abstractmethod
 import json
 
 
-class BaseAddCommand(BaseCommand):
-    help = "Fill Ingredient table with data from json"
+class BaseAddCommand(BaseCommand, ABC):
+    help = "This is just base command class. Don't use it."
     objects = []
 
+    @abstractmethod
     def create_objects(self):
-        pass
+        raise NotImplementedError("You must implement create_objects() in child class!")
 
     def read_json(self, filepath):
         with open(filepath, "r") as json_file:
