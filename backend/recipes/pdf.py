@@ -12,7 +12,6 @@ FONT = TrueTypeFont.true_type_font_from_file(Path(STATIC_ROOT / "fonts/DejaVuSan
 
 
 class ShoppingCartDocument:
-
     def __init__(self, recipes):
         self.recipes = recipes
         self.document = Document()
@@ -20,56 +19,57 @@ class ShoppingCartDocument:
         self.document.add_page(self.page)
         self.layout = SingleColumnLayout(self.page)
         self.create_document()
-        
+
     def _generate_ingredients_list(self):
         ingredients = {}
         for recipe in self.recipes:
-            for ingredient in recipe['ingredients']:
-                name = ingredient['name'].lower().strip()
-                amount = ingredient['amount']
-                unit = ingredient['measurement_unit']
-                
+            for ingredient in recipe["ingredients"]:
+                name = ingredient["name"].lower().strip()
+                amount = ingredient["amount"]
+                unit = ingredient["measurement_unit"]
+
                 if name in ingredients:
                     existing = ingredients[name]
-                    if existing['unit'] == unit:
-                        existing['amount'] += amount
+                    if existing["unit"] == unit:
+                        existing["amount"] += amount
                     else:
                         pass
                 else:
-                    ingredients[name] = {
-                        'amount': amount,
-                        'unit': unit
-                    }
-        
+                    ingredients[name] = {"amount": amount, "unit": unit}
+
         return ingredients
 
     def create_document(self):
         self.layout.add(Paragraph("Список покупок", font=FONT, font_size=Decimal(20)))
-        
+
         self.layout.add(Paragraph("Рецепты:", font=FONT))
         for recipe in self.recipes:
-            self.layout.add(Paragraph(f"- {recipe.get('name', 'Без названия')}", font=FONT))
-        
+            self.layout.add(
+                Paragraph(f"- {recipe.get('name', 'Без названия')}", font=FONT)
+            )
+
         self.layout.add(Paragraph(" "))
-        
+
         ingredients = self._generate_ingredients_list()
-        
-        table = FixedColumnWidthTable(number_of_columns=3, number_of_rows=len(ingredients)+1)
+
+        table = FixedColumnWidthTable(
+            number_of_columns=3, number_of_rows=len(ingredients) + 1
+        )
         table.add(TableCell(Paragraph("Ингредиент", font=FONT)))
         table.add(TableCell(Paragraph("Количество", font=FONT)))
         table.add(TableCell(Paragraph("Ед. измерения", font=FONT)))
-        
+
         for name, data in sorted(ingredients.items()):
             table.add(TableCell(Paragraph(name.capitalize(), font=FONT)))
-            table.add(TableCell(Paragraph(str(data['amount']), font=FONT)))
-            table.add(TableCell(Paragraph(data['unit'], font=FONT)))
-        
+            table.add(TableCell(Paragraph(str(data["amount"]), font=FONT)))
+            table.add(TableCell(Paragraph(data["unit"], font=FONT)))
+
         self.layout.add(table)
-        
+
         self.layout.add(Paragraph(" "))
         self.layout.add(Paragraph("Заметки:", font=FONT))
         self.layout.add(TextField(value="", font_size=Decimal(12)))
-        
+
         return self.document
 
     def save(self, buffer):

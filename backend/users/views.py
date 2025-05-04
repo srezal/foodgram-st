@@ -12,44 +12,41 @@ User = get_user_model()
 
 
 class CustomUserViewSet(djoser_views.UserViewSet):
-
-
     @action(
-        methods=['get'],
+        methods=["get"],
         detail=False,
         permission_classes=[IsAuthenticated],
-        url_name='me',
+        url_name="me",
     )
     def me(self, request, *args, **kwargs):
         return super().me(request, *args, **kwargs)
-    
+
     @action(
-        methods=['post'],
+        methods=["post"],
         detail=True,
         permission_classes=[IsAuthenticated],
-        url_name='subscribe',
+        url_name="subscribe",
     )
     def subscribe(self, request, id):
         serializer = SubscribtionSerializer(
-            data={'author': self.get_object()},
-            context={'request': request},
+            data={"author": self.get_object()},
+            context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
 
     @action(
-        methods=['get'],
+        methods=["get"],
         detail=False,
         permission_classes=[IsAuthenticated],
-        url_path='subscriptions',
-        url_name='subscriptions',
+        url_path="subscriptions",
+        url_name="subscriptions",
     )
     def subscriptions(self, request):
         page = self.paginate_queryset(Subscription.objects.filter(user=request.user))
         serializer = SubscribtionSerializer(
-            page, many=True, context={'request': request}
+            page, many=True, context={"request": request}
         )
         return self.get_paginated_response(serializer.data)
 
@@ -64,11 +61,11 @@ class CustomUserViewSet(djoser_views.UserViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
-        methods=['put'],
+        methods=["put"],
         detail=False,
         permission_classes=[IsAuthenticated],
-        url_path='me/avatar',
-        url_name='me-avatar',
+        url_path="me/avatar",
+        url_name="me-avatar",
     )
     def avatar(self, request):
         serializer = self._change_avatar(request.data)
@@ -77,11 +74,11 @@ class CustomUserViewSet(djoser_views.UserViewSet):
     @avatar.mapping.delete
     def delete_avatar(self, request):
         data = request.data
-        if 'avatar' not in data:
-            data = {'avatar': None}
+        if "avatar" not in data:
+            data = {"avatar": None}
         self._change_avatar(data)
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
     def _change_avatar(self, data):
         instance = self.get_instance()
         serializer = AvatarSerializer(instance, data=data)

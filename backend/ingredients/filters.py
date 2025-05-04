@@ -3,8 +3,8 @@ from .models import Ingredient
 
 
 class IngredientFilterSet(FilterSet):
-    name = CharFilter(lookup_expr='istartswith')
+    name = CharFilter(lookup_expr="istartswith")
 
     class Meta:
         model = Ingredient
-        fields = ('name',)
+        fields = ("name",)

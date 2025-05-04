@@ -4,22 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='LinkPair',
+            name="LinkPair",
             fields=[
-                ('original_link', models.CharField(primary_key=True, serialize=False, verbose_name='Оригинальная ссылка')),
-                ('short_link', models.CharField(verbose_name='Прямая ссылка')),
+                (
+                    "original_link",
+                    models.CharField(
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="Оригинальная ссылка",
+                    ),
+                ),
+                ("short_link", models.CharField(verbose_name="Прямая ссылка")),
             ],
             options={
-                'verbose_name': 'Пара ссылок',
-                'verbose_name_plural': 'Пары ссылок',
+                "verbose_name": "Пара ссылок",
+                "verbose_name_plural": "Пары ссылок",
             },
         ),
     ]

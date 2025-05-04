@@ -3,7 +3,7 @@ from ...models import Ingredient
 
 
 class Command(BaseAddCommand):
-    help = 'Fill Ingredient table with data from json'
+    help = "Fill Ingredient table with data from json"
 
     def create_objects(self):
         if Ingredient.objects.count() > 0:

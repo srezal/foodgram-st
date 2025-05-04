@@ -5,4 +5,4 @@ from .models import Ingredient
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = "__all__"
