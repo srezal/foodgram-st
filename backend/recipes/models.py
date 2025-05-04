@@ -33,10 +33,12 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, verbose_name='Ингредиенты', through='IngredientInRecipe'
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепт'
+        ordering = ['-created_at']
 
 
     def __str__(self):

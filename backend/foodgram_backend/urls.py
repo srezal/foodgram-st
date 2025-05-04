@@ -25,7 +25,6 @@ urlpatterns = [
     path('api/', include('users.urls')),
     path('api/', include('ingredients.urls')),
     path('api/', include('recipes.urls')),
-    # path('api/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('', include('short_links.urls'))
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+]

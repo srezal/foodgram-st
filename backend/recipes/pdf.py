@@ -8,9 +8,9 @@ from decimal import Decimal
 from borb.pdf.pdf import PDF
 from borb.pdf.canvas.font.simple_font.true_type_font import TrueTypeFont
 from pathlib import Path
+from foodgram_backend.settings import STATIC_ROOT
 
-
-FONT = TrueTypeFont.true_type_font_from_file(Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"))
+FONT = TrueTypeFont.true_type_font_from_file(Path(STATIC_ROOT / "fonts/DejaVuSans.ttf"))
 
 
 class ShoppingCartDocument:
