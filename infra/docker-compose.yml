@@ -3,7 +3,7 @@ services:
 
   frontend:
     container_name: foodgram-front
-    build: ../frontend
+    image: srezal/foodgram-frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
   db:
