@@ -3,7 +3,7 @@ from ...models import Recipe, IngredientInRecipe
 from users.models import User
 from ingredients.models import Ingredient
 import os
-from foodgram_backend.settings import BASE_DIR, MEDIA_ROOT
+from foodgram_backend.settings import BASE_DIR
 
 
 class Command(BaseAddCommand):

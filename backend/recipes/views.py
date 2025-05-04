@@ -32,7 +32,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name='favorite'
     )
     def favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
+        get_object_or_404(Recipe, pk=pk)
         serializer = AddRecipeInFavoriteSerializer(
             data={
                 'user': self.request.user,
@@ -64,7 +64,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name='shopping_cart'
     )
     def shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
+        get_object_or_404(Recipe, pk=pk)
         serializer = AddRecipeInShoppingCartSerializer(
             data={
                 'user': self.request.user,
