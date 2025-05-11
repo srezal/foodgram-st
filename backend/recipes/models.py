@@ -1,8 +1,52 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth import get_user_model
 
-from ingredients.models import Ingredient
-from users.models import User
+
+
+class Ingredient(models.Model):
+    name = models.CharField("Название", max_length=150, db_index=True)
+    measurement_unit = models.CharField("Единицы измерения", max_length=10)
+
+    class Meta:
+        ordering = ("name",)
+        verbose_name = "Ингредиент"
+        verbose_name_plural = "Ингредиенты"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "measurement_unit"],
+                name="name_measurement_unit",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.measurement_unit})"
+
+
+class User(AbstractUser):
+    email = models.EmailField(
+        unique=True,
+        max_length=254,
+        verbose_name="email",
+        help_text="Введите адрес электронной почты",
+    )
+    avatar = models.ImageField(
+        upload_to="users/images/",
+        null=True,
+        default=None,
+        blank=True,
+        verbose_name="Аватар",
+    )
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
+    def __str__(self):
+        return self.username
 
 
 class Recipe(models.Model):
@@ -91,3 +135,28 @@ class IngredientInRecipe(models.Model):
         default_related_name = "recipe_ingredients"
         verbose_name = "Ингредиент в составе рецепта"
         verbose_name_plural = "Ингредиенты в составе рецептов"
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="follower",
+        verbose_name="Подписчик",
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="following",
+        verbose_name="Отслеживаемый автор",
+    )
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(fields=("user", "author"), name="unique_following"),
+        )
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"{self.user} follows {self.author}"

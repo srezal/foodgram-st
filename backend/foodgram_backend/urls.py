@@ -23,11 +23,8 @@ from . import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("users.urls")),
-    path("api/", include("ingredients.urls")),
-    path("api/", include("recipes.urls")),
-    path("api/auth/", include("djoser.urls.authtoken")),
-    path("", include("short_links.urls")),
+    path("api/", include("api.urls")),
+    path("", include("recipes.urls")),
 ]
 
 

@@ -41,11 +41,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "users.apps.UsersConfig",
-    "ingredients.apps.IngredientsConfig",
     "recipes.apps.RecipesConfig",
-    "core.apps.CoreConfig",
-    "short_links.apps.ShortLinksConfig",
+    "api.apps.ApiConfig",
     "djoser",
     "rest_framework",
     "corsheaders",
@@ -87,13 +84,17 @@ WSGI_APPLICATION = "foodgram_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get("DB_HOST"),
-        "PORT": os.environ.get("DB_PORT"),
+    # "default": {
+    #     "ENGINE": "django.db.backends.postgresql",
+    #     "NAME": os.environ.get("DB_NAME"),
+    #     "USER": os.environ.get("DB_USER"),
+    #     "PASSWORD": os.environ.get("DB_PASSWORD"),
+    #     "HOST": os.environ.get("DB_HOST"),
+    #     "PORT": os.environ.get("DB_PORT"),
+    # }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -101,7 +102,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "recipes.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -150,12 +151,12 @@ MEDIA_ROOT = BASE_DIR / "media_backend"
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
-        "core.permissions.IsOwnerOrReadOnly",
+        "api.recipes.permissions.IsOwnerOrReadOnly",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
     ],
-    "DEFAULT_PAGINATION_CLASS": "core.pagination.FoodgramPagination",
+    "DEFAULT_PAGINATION_CLASS": "api.recipes.pagination.FoodgramPagination",
 }
 
 
@@ -164,9 +165,9 @@ DJOSER = {
     "HIDE_USERS": False,
     "USER_CREATE_PASSWORD_RETYPE": False,
     "SERIALIZERS": {
-        "user_create": "users.serializers.FoodgramCreateUserSerializer",
-        "user": "users.serializers.FoodgramUserSerializer",
-        "current_user": "users.serializers.FoodgramUserSerializer",
+        "user_create": "api.users.serializers.FoodgramCreateUserSerializer",
+        "user": "api.users.serializers.FoodgramUserSerializer",
+        "current_user": "api.users.serializers.FoodgramUserSerializer",
     },
     "PERMISSIONS": {
         "activation": ["rest_framework.permissions.AllowAny"],
