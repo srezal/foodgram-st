@@ -144,3 +144,5 @@ media/
 
 *.drawio
 models.drawio.png
+
+media*
