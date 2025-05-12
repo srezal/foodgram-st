@@ -1,6 +1,5 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth import get_user_model
 from recipes.models import Subscription
 from drf_extra_fields.fields import Base64ImageField
@@ -11,11 +10,10 @@ User = get_user_model()
 
 
 class FoodgramCreateUserSerializer(UserCreateSerializer):
-    password = serializers.CharField(required=True, write_only=True)
-    email = serializers.EmailField(required=True)
+    # Не могу убрать этот класс, потому что в стандартном сериализаторе djoser поля first_name, last_name необязательные
+    # а по условию задания от Яндекса, они должны быть обязательными
     first_name = serializers.CharField(required=True, max_length=150)
     last_name = serializers.CharField(required=True, max_length=150)
-    id = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = User
@@ -38,12 +36,13 @@ class FoodgramUserSerializer(UserSerializer):
             "avatar",
         )
 
-    def get_is_subscribed(self, obj):
+    def get_is_subscribed(self, author):
         request = self.context.get("request")
-        if request is None or request.user.is_anonymous:
-            return False
-        return Subscription.objects.filter(user=request.user, author=obj).exists()
-
+        return (
+            request is not None 
+            and not request.user.is_anonymous 
+            and Subscription.objects.filter(user=request.user, author=author).exists()
+        )
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
@@ -51,11 +50,11 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ("id", "name", "image", "cooking_time")
+        read_only_fields = ("id", "name", "image", "cooking_time")
 
 
 class FoodgramUserWithRecipesSerializer(FoodgramUserSerializer):
     recipes = serializers.SerializerMethodField()
-    is_subscribed = serializers.SerializerMethodField(method_name="get_is_subscribed")
     recipes_count = serializers.IntegerField(read_only=True, source="recipes.count")
 
     class Meta:
@@ -91,36 +90,3 @@ class AvatarSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("avatar",)
-
-
-class SubscribtionSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="username",
-        default=serializers.CurrentUserDefault(),
-    )
-    author = serializers.SlugRelatedField(
-        slug_field="username",
-        queryset=User.objects.all(),
-    )
-
-    class Meta:
-        model = Subscription
-        fields = ("author", "user")
-        validators = [
-            UniqueTogetherValidator(
-                queryset=model.objects.all(),
-                fields=("author", "user"),
-                message="Вы уже подписаны на этого пользователя",
-            )
-        ]
-
-    def validate_author(self, author):
-        if self.context["request"].user == author:
-            raise serializers.ValidationError("Нельзя подписаться на самого себя")
-        return author
-
-    def to_representation(self, instance):
-        return FoodgramUserWithRecipesSerializer(
-            instance.author, context=self.context
-        ).data

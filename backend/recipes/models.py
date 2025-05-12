@@ -1,13 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 
 
 
 class Ingredient(models.Model):
     name = models.CharField("Название", max_length=150, db_index=True)
-    measurement_unit = models.CharField("Единицы измерения", max_length=10)
+    measurement_unit = models.CharField("Единица измерения", max_length=10)
 
     class Meta:
         ordering = ("name",)
@@ -25,6 +25,17 @@ class Ingredient(models.Model):
 
 
 class User(AbstractUser):
+    username_validator = RegexValidator(
+        regex=r'^[\w.@+-]+\Z',
+        message="Имя пользователя может содержать только буквы, цифры и символы @/./+/-/_.",
+    )
+
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[username_validator],
+        verbose_name="Имя пользователя",
+    )
     email = models.EmailField(
         unique=True,
         max_length=254,
@@ -44,6 +55,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        ordering = ("-date_joined",)
 
     def __str__(self):
         return self.username
@@ -61,17 +73,12 @@ class Recipe(models.Model):
         verbose_name="Изображение",
     )
     text = models.TextField("Описание")
-    cooking_time = models.PositiveSmallIntegerField(
+    cooking_time = models.IntegerField(
         "Время приготовления в минутах",
         validators=[
             MinValueValidator(
                 1,
-                f"Значение не должно быть меньше {1}",
-            ),
-            MaxValueValidator(
-                180,
-                f"Значение не должно быть больше {180}",
-            ),
+            )
         ],
     )
     ingredients = models.ManyToManyField(
@@ -82,7 +89,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепт"
-        ordering = ["-created_at"]
+        ordering = ("-created_at",)
 
     def __str__(self):
         return self.name
@@ -95,19 +102,24 @@ class FavoriteRecipe(models.Model):
     )
 
     class Meta:
+        constraints = (
+            models.UniqueConstraint(fields=("user", "recipe"), name="unique_favorite_user_recipe"),
+        )
         default_related_name = "favorites"
         verbose_name = "Избранный рецепт"
         verbose_name_plural = "Избранные рецепты"
 
 
-class ShoopingCart(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
+class ShoppingCart(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт", related_name="in_shopping_carts")
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="Пользователь"
+        User, on_delete=models.CASCADE, verbose_name="Пользователь", related_name="shopping_carts"
     )
 
     class Meta:
-        default_related_name = "shopping_cart"
+        constraints = (
+            models.UniqueConstraint(fields=("user", "recipe"), name="unique_user_recipe"),
+        )
         verbose_name = "Рецепт в корзине"
         verbose_name_plural = "Рецепты в корзине"
 
@@ -132,22 +144,26 @@ class IngredientInRecipe(models.Model):
     )
 
     class Meta:
+        constraints = (
+            models.UniqueConstraint(fields=("ingredient", "recipe"), name="unique_ingredient_recipe"),
+        )
         default_related_name = "recipe_ingredients"
-        verbose_name = "Ингредиент в составе рецепта"
-        verbose_name_plural = "Ингредиенты в составе рецептов"
+        verbose_name = "Продукт в составе рецепта"
+        verbose_name_plural = "Продукты в составе рецептов"
+        
 
 
 class Subscription(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="follower",
+        related_name="authors",
         verbose_name="Подписчик",
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="following",
+        related_name="followers",
         verbose_name="Отслеживаемый автор",
     )
 

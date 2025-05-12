@@ -2,20 +2,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from django.db.utils import IntegrityError
 from io import BytesIO
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .serializers import (
-    RecipeSerializer,
-    AddRecipeInShoppingCartSerializer,
-    AddRecipeInFavoriteSerializer,
-)
-from recipes.models import Recipe, ShoopingCart, FavoriteRecipe
+from .serializers import RecipeSerializer
+from recipes.models import Recipe, ShoppingCart, FavoriteRecipe
 from .permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.pdf import ShoppingCartDocument
 from .filters import RecipeFilterSet
+from api.users.serializers import ShortRecipeSerializer
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -34,23 +32,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name="favorite",
     )
     def favorite(self, request, pk):
-        get_object_or_404(Recipe, pk=pk)
-        serializer = AddRecipeInFavoriteSerializer(
-            data={"user": self.request.user, "recipe": pk},
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        recipe = get_object_or_404(Recipe, pk=pk)
+        user = self.request.user
+        try:
+            FavoriteRecipe.objects.create(recipe=recipe, user=user)
+        except IntegrityError:
+            return Response({"detail": "Рецепт уже находится в корзине"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ShortRecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
 
     @favorite.mapping.delete
     def delete_favorite_pair(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
-        obj_count, _ = FavoriteRecipe.objects.filter(
+        get_object_or_404(
+            FavoriteRecipe,
             user=self.request.user,
             recipe=recipe,
         ).delete()
-        if obj_count == 0:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -61,23 +58,22 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name="shopping_cart",
     )
     def shopping_cart(self, request, pk):
-        get_object_or_404(Recipe, pk=pk)
-        serializer = AddRecipeInShoppingCartSerializer(
-            data={"user": self.request.user, "recipe": pk},
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        recipe = get_object_or_404(Recipe, pk=pk)
+        user = self.request.user
+        try:
+            ShoppingCart.objects.create(recipe=recipe, user=user)
+        except IntegrityError:
+            return Response({"detail": "Рецепт уже находится в корзине"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ShortRecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
-        obj_count, _ = ShoopingCart.objects.filter(
+        get_object_or_404(
+            ShoppingCart,
             user=self.request.user,
             recipe=recipe,
         ).delete()
-        if obj_count == 0:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -89,7 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         recipes = [
-            item.recipe for item in ShoopingCart.objects.filter(user=request.user)
+            item.recipe for item in self.request.user.shopping_carts.all()
         ]
         serializer = RecipeSerializer(recipes, many=True, context={"request": request})
         doc = ShoppingCartDocument(serializer.data)

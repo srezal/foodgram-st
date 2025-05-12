@@ -9,20 +9,20 @@ class RecipeFilterSet(FilterSet):
         method="is_favorite_filter", field_name="favorites__user"
     )
     is_in_shopping_cart = BooleanFilter(
-        method="is_in_shopping_cart_filter", field_name="shopping_cart__user"
+        method="is_in_shopping_cart_filter", field_name="in_shopping_carts__user"
     )
 
     class Meta:
         model = Recipe
         fields = ("author", "is_favorited", "is_in_shopping_cart")
 
-    def is_favorite_filter(self, queryset, name, value):
-        return self.filter_from_kwargs(queryset, value, name)
+    def is_favorite_filter(self, recipes, name, value):
+        return self.filter_from_kwargs(recipes, value, name)
 
-    def is_in_shopping_cart_filter(self, queryset, name, value):
-        return self.filter_from_kwargs(queryset, value, name)
+    def is_in_shopping_cart_filter(self, recipes, name, value):
+        return self.filter_from_kwargs(recipes, value, name)
 
-    def filter_from_kwargs(self, queryset, value, name):
+    def filter_from_kwargs(self, recipes, value, name):
         if value and self.request.user.id:
-            return queryset.filter(**{name: self.request.user})
-        return queryset
+            return recipes.filter(**{name: self.request.user})
+        return recipes
