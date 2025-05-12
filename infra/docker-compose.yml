@@ -18,8 +18,7 @@ services:
       - pgdata:/var/lib/postgresql/data
   backend:
     container_name: foodgram-backend
-    #image: srezal/foodgram-backend:latest
-    build: ../backend
+    image: srezal/foodgram-backend:latest
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}

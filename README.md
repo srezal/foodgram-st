@@ -28,7 +28,7 @@ docker exec -it foodgram-backend python manage.py loaddata ./data/db.json
 
 Приложение доступно по ссылке http://localhost
 
-Панель администратора доступна по ссылке http://localhost/admin
+Панель администратора доступна по ссылке http://localhost/admin (email: admin.user@example.com, пароль: 123)
 
 Справка по API доступна по ссылке  http://localhost/api/docs/
 
