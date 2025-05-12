@@ -99,5 +99,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop("recipe_ingredients")
         with transaction.atomic():
             instance.ingredients.clear()
+            super().update(instance, validated_data)
             self.bulk_create_ingredients(ingredients, instance)
             return instance
