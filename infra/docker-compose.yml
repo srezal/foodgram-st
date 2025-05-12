@@ -18,13 +18,15 @@ services:
       - pgdata:/var/lib/postgresql/data
   backend:
     container_name: foodgram-backend
-    image: srezal/foodgram-backend:latest
+    #image: srezal/foodgram-backend:latest
+    build: ../backend
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
     volumes:
       - staticfiles:/app/static_backend/
       - mediafiles:/app/media_backend/
