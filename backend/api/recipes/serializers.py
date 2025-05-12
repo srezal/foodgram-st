@@ -1,11 +1,10 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from recipes.models import Recipe, IngredientInRecipe, FavoriteRecipe, ShoppingCart
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import Ingredient
-from ..users.serializers import FoodgramUserSerializer, ShortRecipeSerializer
+from ..users.serializers import FoodgramUserSerializer
 
 
 User = get_user_model()
