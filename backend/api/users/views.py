@@ -1,6 +1,5 @@
 from djoser import views as djoser_views
 from django.shortcuts import get_object_or_404
-from django.db.utils import IntegrityError
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

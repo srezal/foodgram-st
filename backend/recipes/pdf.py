@@ -1,5 +1,4 @@
 from borb.pdf import Document, Page, Paragraph, TableCell
-from borb.pdf.canvas.layout.forms.text_field import TextField
 from borb.pdf.canvas.layout.table.fixed_column_width_table import FixedColumnWidthTable
 from borb.pdf.canvas.layout.page_layout.multi_column_layout import SingleColumnLayout
 from decimal import Decimal
