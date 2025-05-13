@@ -18,19 +18,28 @@ SECRET_KEY=secret_key
 docker compose up
 ```
 
-## Импорт данных
+## Импорт продуктов
 
-Для импорта данных необходимо выполнить следующую команду
+Для импорта продуктов необходимо выполнить следующую команду
 
 ```
-docker exec -it foodgram-backend python manage.py loaddata ./data/db.json
+docker exec -it foodgram-backend python manage.py add_ingredients ./data/ingredients.json
 ```
 
-Приложение доступно по ссылке http://localhost
+Приложение доступно по [ссылке](http://localhost)
 
-Панель администратора доступна по ссылке http://localhost/admin (email: admin.user@example.com, пароль: 123)
+Панель администратора доступна по [ссылке](http://localhost/admin)
 
-Справка по API доступна по ссылке  http://localhost/api/docs/
+Справка по API доступна по [ссылке](http://localhost/api/docs/)
+
+
+## Создание пользователя-администратора
+
+Для создания пользователя-администратора выполните следующую команду
+
+```
+docker exec -it foodgram-backend python manage.py createsuperuser
+```
 
 
 # Стек технологий
@@ -50,4 +59,4 @@ docker exec -it foodgram-backend python manage.py loaddata ./data/db.json
 
 Ринг Сергей
 
-telegram: @srezall
+telegram: [@srezall](https://t.me/srezall)
