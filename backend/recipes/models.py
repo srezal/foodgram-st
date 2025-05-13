@@ -6,8 +6,8 @@ from django.core.validators import RegexValidator
 
 
 class Ingredient(models.Model):
-    name = models.CharField("Название", max_length=150, db_index=True)
-    measurement_unit = models.CharField("Единица измерения", max_length=10)
+    name = models.CharField("Название", max_length=128, db_index=True)
+    measurement_unit = models.CharField("Единица измерения", max_length=64)
 
     class Meta:
         ordering = ("name",)
@@ -25,16 +25,11 @@ class Ingredient(models.Model):
 
 
 class User(AbstractUser):
-    username_validator = RegexValidator(
-        regex=r'^[\w.@+-]+\Z',
-        message="Имя пользователя может содержать только буквы, цифры и символы @/./+/-/_.",
-    )
-
     username = models.CharField(
         max_length=150,
         unique=True,
-        validators=[username_validator],
-        verbose_name="Имя пользователя",
+        validators=(RegexValidator(regex=r'^[\w.@+-]+\Z'),),
+        verbose_name="Никнейм пользователя",
     )
     email = models.EmailField(
         unique=True,
@@ -82,7 +77,10 @@ class Recipe(models.Model):
         ],
     )
     ingredients = models.ManyToManyField(
-        Ingredient, verbose_name="Ингредиенты", through="IngredientInRecipe"
+        Ingredient,
+        verbose_name="Ингредиенты",
+        through="IngredientInRecipe",
+        related_name="recipes"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -95,13 +93,24 @@ class Recipe(models.Model):
         return self.name
 
 
-class FavoriteRecipe(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
+class UserRecipe(models.Model):
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name="Рецепт"
+    )
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="Пользователь"
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь"
     )
 
     class Meta:
+        abstract = True
+
+
+class FavoriteRecipe(UserRecipe):
+    class Meta():
         constraints = (
             models.UniqueConstraint(fields=("user", "recipe"), name="unique_favorite_user_recipe"),
         )
@@ -110,16 +119,12 @@ class FavoriteRecipe(models.Model):
         verbose_name_plural = "Избранные рецепты"
 
 
-class ShoppingCart(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт", related_name="in_shopping_carts")
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="Пользователь", related_name="shopping_carts"
-    )
-
-    class Meta:
+class ShoppingCart(UserRecipe):
+    class Meta():
         constraints = (
-            models.UniqueConstraint(fields=("user", "recipe"), name="unique_user_recipe"),
+            models.UniqueConstraint(fields=("user", "recipe"), name="unique_shopping_cart_user_recipe"),
         )
+        default_related_name = "shopping_carts"
         verbose_name = "Рецепт в корзине"
         verbose_name_plural = "Рецепты в корзине"
 
@@ -131,16 +136,7 @@ class IngredientInRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
     amount = models.PositiveIntegerField(
         "Количество",
-        validators=[
-            MinValueValidator(
-                0,
-                f"Значение не должно быть меньше {0}",
-            ),
-            MaxValueValidator(
-                100,
-                f"Значение не должно быть больше {100}",
-            ),
-        ],
+        validators=(MinValueValidator(1),)
     )
 
     class Meta:
@@ -158,12 +154,20 @@ class Subscription(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="authors",
+        # при обращении к полю authors объекта класса User ожидается получение всех авторов,
+        # на которых он подписан, related_name позволит нам получить все строки таблицы, где в колонке user
+        # располагается текущий объект, так как поле user - подписчик, получится, что были получены все авторы
+        # поэтому здесь в качестве related_name указано значение authors
         verbose_name="Подписчик",
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="followers",
+        # при обращении к полю followers объекта класса User ожидается получение всех подписчиков,
+        # related_name позволит нам получить все строки таблицы, где в колонке author
+        # располагается текущий объект, так как поле author - автор, получится, что были получены все подписчики
+        # поэтому здесь в качестве related_name указано значение followers
         verbose_name="Отслеживаемый автор",
     )
 

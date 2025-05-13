@@ -32,6 +32,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = FoodgramUserSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
+    cooking_time = serializers.IntegerField(min_value=1)
 
     class Meta:
         model = Recipe
@@ -77,20 +78,19 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ShoppingCart.objects.filter(user=current_user, recipe=recipe).exists()
 
     def bulk_create_ingredients(self, ingredients, recipe):
-        ingredient_instances = [
+        IngredientInRecipe.objects.bulk_create([
             IngredientInRecipe(
                 recipe=recipe,
                 ingredient=item["id"],
                 amount=item["amount"],
             )
             for item in ingredients
-        ]
-        IngredientInRecipe.objects.bulk_create(ingredient_instances) 
+        ]) 
 
     def create(self, validated_data):
         ingredients = validated_data.pop("recipe_ingredients")
         with transaction.atomic():
-            validated_data["author"] = self.context["request"].user
+            validated_data["author"] = self.context["request"].user # без этой строки не добавится автор, его нет в validate_data по умолчанию
             recipe = super().create(validated_data)
             self.bulk_create_ingredients(ingredients, recipe)
             return recipe
@@ -99,6 +99,5 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop("recipe_ingredients")
         with transaction.atomic():
             instance.ingredients.clear()
-            super().update(instance, validated_data)
             self.bulk_create_ingredients(ingredients, instance)
-            return instance
+        return super().update(instance, validated_data)

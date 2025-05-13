@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from dotenv import load_dotenv
+from django.core.management.utils import get_random_secret_key
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,7 +24,7 @@ load_dotenv(os.path.join(BASE_DIR, "..", "infra", ".env"))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,13 +85,17 @@ WSGI_APPLICATION = "foodgram_backend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME"),
-        "USER": os.environ.get("DB_USER"),
-        "PASSWORD": os.environ.get("DB_PASSWORD"),
-        "HOST": os.environ.get("DB_HOST"),
-        "PORT": os.environ.get("DB_PORT"),
+    # "default": {
+    #     "ENGINE": "django.db.backends.postgresql",
+    #     "NAME": os.environ.get("DB_NAME"),
+    #     "USER": os.environ.get("DB_USER"),
+    #     "PASSWORD": os.environ.get("DB_PASSWORD"),
+    #     "HOST": os.environ.get("DB_HOST"),
+    #     "PORT": os.environ.get("DB_PORT"),
+    # }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -161,7 +166,6 @@ DJOSER = {
     "HIDE_USERS": False,
     "USER_CREATE_PASSWORD_RETYPE": False,
     "SERIALIZERS": {
-        "user_create": "api.users.serializers.FoodgramCreateUserSerializer",
         "user": "api.users.serializers.FoodgramUserSerializer",
         "current_user": "api.users.serializers.FoodgramUserSerializer",
     },

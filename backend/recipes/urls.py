@@ -6,5 +6,5 @@ app_name = "recipes"
 
 
 urlpatterns = [
-    path("s/<int:id>/", views.handle_short_link),
+    path("s/<int:id>/", views.handle_short_link, name="short_link"),
 ]

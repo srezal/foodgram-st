@@ -9,7 +9,7 @@ class RecipeFilterSet(FilterSet):
         method="is_favorite_filter", field_name="favorites__user"
     )
     is_in_shopping_cart = BooleanFilter(
-        method="is_in_shopping_cart_filter", field_name="in_shopping_carts__user"
+        method="is_in_shopping_cart_filter", field_name="shopping_carts__user"
     )
 
     class Meta:

@@ -9,17 +9,6 @@ from recipes.models import Recipe
 User = get_user_model()
 
 
-class FoodgramCreateUserSerializer(UserCreateSerializer):
-    # Не могу убрать этот класс, потому что в стандартном сериализаторе djoser поля first_name, last_name необязательные
-    # а по условию задания от Яндекса, они должны быть обязательными
-    first_name = serializers.CharField(required=True, max_length=150)
-    last_name = serializers.CharField(required=True, max_length=150)
-
-    class Meta:
-        model = User
-        fields = ("email", "id", "username", "first_name", "last_name", "password")
-
-
 class FoodgramUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(method_name="get_is_subscribed")
     avatar = Base64ImageField(required=False, allow_null=True)
@@ -50,7 +39,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ("id", "name", "image", "cooking_time")
-        read_only_fields = ("id", "name", "image", "cooking_time")
+        read_only_fields = fields
 
 
 class FoodgramUserWithRecipesSerializer(FoodgramUserSerializer):

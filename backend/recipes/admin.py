@@ -50,9 +50,9 @@ class RecipeAdmin(admin.ModelAdmin):
     @mark_safe
     def ingredients_list(self, recipe):
         ingredients = recipe.recipe_ingredients.all().select_related('ingredient')
-        items = [f"<li>{item.ingredient.name} - {item.amount} {item.ingredient.measurement_unit}</li>" 
+        items = [f"{item.ingredient.name} - {item.amount} {item.ingredient.measurement_unit}" 
                 for item in ingredients]
-        return f"<ul>{''.join(items)}</ul>" if items else "-"
+        return f"{'<br>'.join(items)}" if items else "-"
 
     @admin.display(description="Изображение")
     @mark_safe
@@ -65,13 +65,14 @@ class RecipeAdmin(admin.ModelAdmin):
 class HasRecipesFilter(admin.SimpleListFilter):
     title = 'Наличие в рецептах'
     parameter_name = 'has_recipes'
+    lookups_value = (
+        ('yes', 'Есть в рецептах'),
+        ('no', 'Нет в рецептах'),
+    )
 
     def lookups(self, request, model_admin):
-        return (
-            ('yes', 'Есть в рецептах'),
-            ('no', 'Нет в рецептах'),
-        )
-
+        return self.lookups_value
+    
     def queryset(self, request, ingredients):
         if self.value() == 'yes':
             return ingredients.filter(recipe_ingredients__isnull=False).distinct()
@@ -82,7 +83,7 @@ class HasRecipesFilter(admin.SimpleListFilter):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit', 'is_in_recipes')
+    list_display = ('name', 'measurement_unit', 'recipes_count')
     readonly_fields = ('recipes_count',)
     list_filter = (
         'measurement_unit',
@@ -91,13 +92,9 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name', 'measurement_unit')
     search_help_text = "Поиск по названию ингредиента или единице измерения"
 
-    @admin.display(description="Количество рецептов")
+    @admin.display(description="Рецептов")
     def recipes_count(self, ingredient):
         return ingredient.recipe_ingredients.count()
-
-    @admin.display(description="Есть в рецептах", boolean=True)
-    def is_in_recipes(self, ingredient):
-        return ingredient.recipe_ingredients.exists()  # Оптимизированная проверка
 
 
 @admin.register(Subscription)

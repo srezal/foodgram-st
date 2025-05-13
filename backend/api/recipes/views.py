@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from django.db.utils import IntegrityError
+from django.urls import reverse
 from io import BytesIO
 from rest_framework import status
 from rest_framework.decorators import action
@@ -24,6 +24,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     filterset_class = RecipeFilterSet
 
+    def remove_entry_from_user_recipe_table(self, model, user, recipe_pk):
+        get_object_or_404(
+            model,
+            user=user,
+            recipe__pk=recipe_pk,
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def add_entry_to_user_recipe_table(self, model, user, recipe_pk, err_400_detail):
+        recipe = get_object_or_404(Recipe, pk=recipe_pk)
+        _, created = model.objects.get_or_create(recipe=recipe, user=user)
+        if not created:
+            return Response(
+                {
+                    "detail": err_400_detail,
+                    "recipe": ShortRecipeSerializer(recipe).data
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(ShortRecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
+    
     @action(
         permission_classes=[IsAuthenticated],
         methods=["post"],
@@ -32,23 +53,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name="favorite",
     )
     def favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = self.request.user
-        try:
-            FavoriteRecipe.objects.create(recipe=recipe, user=user)
-        except IntegrityError:
-            return Response({"detail": "Рецепт уже находится в корзине"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(ShortRecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
+        return self.add_entry_to_user_recipe_table(
+            FavoriteRecipe,
+            request.user,
+            pk,
+            "Рецепт уже добавлен в избранное"
+        )
 
     @favorite.mapping.delete
     def delete_favorite_pair(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        get_object_or_404(
+        return self.remove_entry_from_user_recipe_table(
             FavoriteRecipe,
-            user=self.request.user,
-            recipe=recipe,
-        ).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            request.user,
+            pk
+        )
 
     @action(
         permission_classes=[IsAuthenticated],
@@ -58,23 +76,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name="shopping_cart",
     )
     def shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = self.request.user
-        try:
-            ShoppingCart.objects.create(recipe=recipe, user=user)
-        except IntegrityError:
-            return Response({"detail": "Рецепт уже находится в корзине"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(ShortRecipeSerializer(recipe).data, status=status.HTTP_201_CREATED)
+        return self.add_entry_to_user_recipe_table(
+            ShoppingCart,
+            request.user,
+            pk,
+            "Рецепт уже добавлен в корзину"
+        )
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        get_object_or_404(
+        return self.remove_entry_from_user_recipe_table(
             ShoppingCart,
-            user=self.request.user,
-            recipe=recipe,
-        ).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            request.user,
+            pk
+        )
 
     @action(
         permission_classes=[IsAuthenticated],
@@ -105,4 +120,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_name="get-link",
     )
     def get_link(self, request, pk):
-        return Response({"short-link": request.build_absolute_uri(f"/s/{pk}/")})
+        return Response(
+            {
+                "short-link": request.build_absolute_uri(
+                    reverse("recipes:short_link", kwargs={"id": pk})
+                )
+            }
+        )
